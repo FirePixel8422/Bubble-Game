@@ -12,8 +12,8 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: DefaultCompany
-  productName: TerraTopia
+  companyName: Crusty A Crab Inc
+  productName: BubbleGame
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -919,11 +919,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: e317a0be-75cd-4517-9790-9ef4c9ecf282
+  cloudProjectId: f7b3e85d-577d-44c6-a735-eee480ca07e2
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: TerraTopia
-  organizationId: bmtminecraft
+  projectName: Bubble Game
+  organizationId: fire-pixel8422
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
