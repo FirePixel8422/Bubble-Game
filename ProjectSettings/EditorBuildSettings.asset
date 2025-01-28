@@ -6,9 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Pre-StartScreen.unity
+    path: Assets/Scenes/Login Screen.unity
     guid: c593345f040748e4bb4767854b8b2359
   - enabled: 1
-    path: Assets/Scenes/ConnectToLobby.unity
-    guid: aeaf33a84e28b4d4ca3f1e1b1c4eb832
+    path: Assets/Scenes/Setup Network.unity
+    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Pre-Main Game.unity
+    guid: 8d43beab7bea873448133f887406d933
+  - enabled: 1
+    path: Assets/Scenes/Main Game.unity
+    guid: c47ad0cf01c33164499a6c0105dbe04b
   m_configObjects: {}

@@ -21,6 +21,7 @@ public class LoginHandler : MonoBehaviour
 
 
     [SerializeField] private GameObject blackScreenCover;
+    [SerializeField] private GameObject invisibleScreenCover;
 
     [SerializeField] private TMP_InputField usernameField;
     [SerializeField] private TMP_InputField passwordField;
@@ -41,12 +42,12 @@ public class LoginHandler : MonoBehaviour
 #endif
 
 
-    private const string invalidUsernameError = "Signing Up failed:\nUsername does not match requirements. Insert only letters, digits and symbols among {., -, _, @}. With a minimum of 3 characters and a maximum of 20";
-    private const string invalidPasswordError = "Signing Up failed:\nPassword does not match requirements. Insert at least 1 uppercase, 1 lowercase, 1 digit and 1 symbol. With minimum 8 characters and a maximum of 30";
-    private const string usernameTakenError = "Signing Up failed:\nUsername is already taken.";
+    private const string _invalidUsernameError = "Signing Up failed:\nUsername does not match requirements. Insert only letters, digits and symbols among {., -, _, @}. With a minimum of 3 characters and a maximum of 20";
+    private const string _invalidPasswordError = "Signing Up failed:\nPassword does not match requirements. Insert at least 1 uppercase, 1 lowercase, 1 digit and 1 symbol. With minimum 8 characters and a maximum of 30";
+    private const string _usernameTakenError = "Signing Up failed:\nUsername is already taken.";
 
-    private const string emptyFieldError = "Signing In/Up failed:\nPlease fill in all the fields.";
-    private const string wrongLoginInfoError = "Signing In failed:\nAccount doesnt exist or password is wrong.";
+    private const string _emptyFieldError = "Signing In/Up failed:\nPlease fill in all the fields.";
+    private const string _wrongLoginInfoError = "Signing In failed:\nAccount doesnt exist or password is wrong.";
 
 
     private AsyncOperation mainSceneLoadOperation;
@@ -54,14 +55,14 @@ public class LoginHandler : MonoBehaviour
 
     private async void Start()
     {
-        await UnityServices.InitializeAsync();
-
-        mainSceneLoadOperation = SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive, false);
+        mainSceneLoadOperation = SceneManager.LoadSceneAsync("Setup Network", LoadSceneMode.Additive, false);
 
         mainSceneLoadOperation.completed += (AsyncOperation sceneLoadOperation) =>
         {
-            SceneManager.UnLoadSceneAsync(0);
+            SceneManager.UnLoadSceneAsync("Login Screen");
         };
+
+        await UnityServices.InitializeAsync();
 
         TryAutoLoginWithSessionToken();
     }
@@ -94,6 +95,8 @@ public class LoginHandler : MonoBehaviour
             AuthenticationService.Instance.ClearSessionToken();
 
             print("Session Token cleared, logged out");
+
+            blackScreenCover.SetActive(false);
 
             return;
         }
@@ -188,6 +191,8 @@ public class LoginHandler : MonoBehaviour
     /// <returns></returns>
     private async Task TrySignInAsync(string username, string password)
     {
+        invisibleScreenCover.SetActive(true);
+
         try
         {
             await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(username, password);
@@ -203,13 +208,15 @@ public class LoginHandler : MonoBehaviour
             //Username doesnt exist or password is wrong
             if (exString.StartsWith("Unity.Services.Core.RequestFailedException: Invalid username or password"))
             {
-                errorTextField.text = wrongLoginInfoError;
+                errorTextField.text = _wrongLoginInfoError;
             }
             //Username and/or Password are not in the correct format (one of the fields are empty)
             else if (exString.StartsWith("Unity.Services.Authentication.AuthenticationException: Username and/or Password are not in the correct format"))
             {
-                errorTextField.text = emptyFieldError;
+                errorTextField.text = _emptyFieldError;
             }
+
+            invisibleScreenCover.SetActive(false);
 
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -234,6 +241,8 @@ public class LoginHandler : MonoBehaviour
     /// <returns></returns>
     private async Task TrySignUpAsync(string username, string password)
     {
+        invisibleScreenCover.SetActive(true);
+
         try
         {
             await AuthenticationService.Instance.SignUpWithUsernamePasswordAsync(username, password);
@@ -250,25 +259,42 @@ public class LoginHandler : MonoBehaviour
         {
             string exString = ex.ToString();
 
-            //Username does not match requirements. Insert only letters, digits and symbols among {., -, _, @}. With a minimum of 3 characters and a maximum of 20
-            if (exString.StartsWith("Unity.Services.Core.RequestFailedException: Username does not match requirements"))
-            {
-                errorTextField.text = invalidUsernameError;
-            }
-            //Password does not match requirements. Insert at least 1 uppercase, 1 lowercase, 1 digit and 1 symbol. With minimum 8 characters and a maximum of 30
-            else if (exString.StartsWith("Unity.Services.Core.RequestFailedException: Password does not match requirements"))
-            {
-                errorTextField.text = invalidPasswordError;
-            }
             //Username is already taken
-            else if (exString.StartsWith("Unity.Services.Authentication.AuthenticationException: username already exists"))
+            if (exString.StartsWith("Unity.Services.Authentication.AuthenticationException: username already exists"))
             {
-                errorTextField.text = usernameTakenError;
+                errorTextField.text = _usernameTakenError;
             }
             //Username and/or Password are not in the correct format (one of the fields are empty
             else if (exString.StartsWith("Unity.Services.Authentication.AuthenticationException: Username and/or Password are not in the correct format"))
             {
-                errorTextField.text = emptyFieldError;
+                errorTextField.text = _emptyFieldError;
+            }
+
+            invisibleScreenCover.SetActive(false);
+
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (printLoginErrors)
+            {
+                print(ex);
+            }
+#endif
+        }
+        catch (RequestFailedException ex)
+        {
+            string exString = ex.ToString();
+
+            //Username does not match requirements. Insert only letters, digits and symbols among {., -, _, @}. With a minimum of 3 characters and a maximum of 20
+            if (exString.StartsWith("Unity.Services.Core.RequestFailedException: Username does not match requirements"))
+            {
+                errorTextField.text = _invalidUsernameError;
+
+                print("printed");
+            }
+            //Password does not match requirements. Insert at least 1 uppercase, 1 lowercase, 1 digit and 1 symbol. With minimum 8 characters and a maximum of 30
+            else if (exString.StartsWith("Unity.Services.Core.RequestFailedException: Password does not match requirements"))
+            {
+                errorTextField.text = _invalidPasswordError;
             }
 
 

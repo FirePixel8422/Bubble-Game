@@ -1,17 +1,15 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-using Unity.Services.Authentication;
-using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+
+
 
 public class MatchMaker : NetworkBehaviour
 {
@@ -19,54 +17,24 @@ public class MatchMaker : NetworkBehaviour
     private void Awake()
     {
         Instance = this;
-    }
-
-
-
-    public string toLoadScene;
-
-    public string _lobbyId;
-
-
-
-    private async void Start()
-    {
-        await SignInAnonymouslyAsync();
 
         DontDestroyOnLoad(gameObject);
     }
 
+    public string _lobbyId;
 
-    public override void OnNetworkSpawn()
+    [SerializeField] private GameObject invisibleScreenCover;
+
+
+
+    public async void CreateLobbyAsync()
     {
-        NetworkManager.SceneManager.ActiveSceneSynchronizationEnabled = true;
-    }
-
-
-    private async Task SignInAnonymouslyAsync()
-    {
-        try
-        {
-            await UnityServices.InitializeAsync();
-
-            AuthenticationService.Instance.SignOut(true);
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        }
-        catch (Exception ex)
-        {
-            print(ex);
-        }
-    }
-
-
-
-    public async void CreateLobby()
-    {
+        invisibleScreenCover.SetActive(true);
         int maxPlayers = 4;
 
         try
         {
-            Allocation allocation = await Relay.Instance.CreateAllocationAsync(maxPlayers - 1);
+            Allocation allocation = await Relay.Instance.CreateAllocationAsync(maxPlayers - 1, "europe-west4");
             RelayHostData _hostData = new RelayHostData
             {
                 Key = allocation.Key,
@@ -80,10 +48,10 @@ public class MatchMaker : NetworkBehaviour
             _hostData.JoinCode = await Relay.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
 
-
             CreateLobbyOptions options = new CreateLobbyOptions
             {
                 IsPrivate = false,
+                IsLocked = false,
 
                 Data = new Dictionary<string, DataObject>()
                 {
@@ -93,21 +61,9 @@ public class MatchMaker : NetworkBehaviour
                             value: _hostData.JoinCode)
                     },
                 },
-                Player = new Player
-                {
-                    Data = new Dictionary<string, PlayerDataObject>
-                    {
-                        {
-                            AuthenticationService.Instance.PlayerInfo.Username, new PlayerDataObject(
-                                PlayerDataObject.VisibilityOptions.Public)
-                        }
-                    }
-                }
             };
 
-            Lobby lobby = await Lobbies.Instance.CreateLobbyAsync("Lobby", maxPlayers, options);
-
-            //localPlayerId = lobby.Players[0].Id;
+            Lobby lobby = await Lobbies.Instance.CreateLobbyAsync("Unnamed Lobby", maxPlayers, options);
 
 
             _lobbyId = lobby.Id;
@@ -121,37 +77,99 @@ public class MatchMaker : NetworkBehaviour
                 _hostData.Key,
                 _hostData.ConnectionData);
 
-            NetworkManager.Singleton.StartHost();
-            NetworkManager.SceneManager.LoadScene(toLoadScene, LoadSceneMode.Single);
+            NetworkManager.StartHost();
+
+            //load next scene
+            SceneManager.LoadSceneOnNetwork("Pre-Main Game");
         }
         catch (LobbyServiceException e)
         {
+            print(e);
+
+            invisibleScreenCover.SetActive(false);
+        }
+    }
+
+
+    public async void AutoJoinLobbyAsync()
+    {
+        invisibleScreenCover.SetActive(true);
+
+        try
+        {
+            (bool lobbyFound, List<Lobby> lobbies) = await FindLobbiesAsync();
+
+            if (lobbyFound == false)
+            {
+                CreateLobbyAsync();
+
+                return;
+            }
+
+            string joinCode = lobbies[0].Data["joinCode"].Value;
+            JoinAllocation allocation = await Relay.Instance.JoinAllocationAsync(joinCode);
+
+
+            RelayJoinData _joinData = new RelayJoinData
+            {
+                Key = allocation.Key,
+                Port = (ushort)allocation.RelayServer.Port,
+                AllocationID = allocation.AllocationId,
+                AllocationIDBytes = allocation.AllocationIdBytes,
+                ConnectionData = allocation.ConnectionData,
+                HostConnectionData = allocation.HostConnectionData,
+                IPv4Address = allocation.RelayServer.IpV4
+            };
+
+            NetworkManager.GetComponent<UnityTransport>().SetRelayServerData(
+                _joinData.IPv4Address,
+                _joinData.Port,
+                _joinData.AllocationIDBytes,
+                _joinData.Key,
+                _joinData.ConnectionData,
+                _joinData.HostConnectionData);
+
+            NetworkManager.StartClient();
+        }
+        catch (LobbyServiceException e)
+        {
+            invisibleScreenCover.SetActive(false);
+
             print(e);
         }
     }
 
 
-    public async void AutoJoinLobby()
+    public async Task<(bool, List<Lobby>)> FindLobbiesAsync()
     {
         try
         {
-            QuickJoinLobbyOptions quickJoinOptions = new QuickJoinLobbyOptions
+            QueryLobbiesOptions queryOptions = new QueryLobbiesOptions
             {
-                Filter = new List<QueryFilter>
+                Filters = new List<QueryFilter>
                 {
-                     //Only include lobbies that have atleast 1 spot left.
-                     new QueryFilter(
-                         field: QueryFilter.FieldOptions.AvailableSlots,
-                         op: QueryFilter.OpOptions.GT,
-                         value: "0"),
+                    // Only include open lobbies in the pages
+                    new QueryFilter(
+                        field: QueryFilter.FieldOptions.AvailableSlots,
+                        op: QueryFilter.OpOptions.GT,
+                        value: "-1")
                 },
+                Order = new List<QueryOrder>
+                {
+                    // Show the newest lobbies first
+                    new QueryOrder(false, QueryOrder.FieldOptions.Created),
+                }
             };
 
-            await Lobbies.Instance.QuickJoinLobbyAsync(quickJoinOptions);
+            QueryResponse response = await LobbyService.Instance.QueryLobbiesAsync(queryOptions);
+
+            return (response.Results.Count > 0, response.Results);
         }
         catch (LobbyServiceException e)
         {
             print(e);
+
+            return (false, null);
         }
     }
 
@@ -167,7 +185,6 @@ public class MatchMaker : NetworkBehaviour
             string joinCode = lobby.Data["joinCode"].Value;
             JoinAllocation allocation = await Relay.Instance.JoinAllocationAsync(joinCode);
 
-
             RelayJoinData _joinData = new RelayJoinData
             {
                 Key = allocation.Key,
@@ -179,7 +196,7 @@ public class MatchMaker : NetworkBehaviour
                 IPv4Address = allocation.RelayServer.IpV4
             };
 
-            NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(
+            NetworkManager.GetComponent<UnityTransport>().SetRelayServerData(
                 _joinData.IPv4Address,
                 _joinData.Port,
                 _joinData.AllocationIDBytes,
@@ -187,15 +204,14 @@ public class MatchMaker : NetworkBehaviour
                 _joinData.ConnectionData,
                 _joinData.HostConnectionData);
 
-            NetworkManager.Singleton.StartClient();
+            NetworkManager.StartClient();
         }
-        catch(LobbyServiceException e)
+        catch (LobbyServiceException e)
         {
             print(e);
             throw;
         }
     }
-
 
 
 
