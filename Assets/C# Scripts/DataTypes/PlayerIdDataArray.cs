@@ -27,7 +27,7 @@ public struct PlayerIdDataArray : INetworkSerializable
     }
     public void RemovePlayer(ulong removedNetworkId)
     {
-        int removedGameId = NetworkIdToGameId(removedNetworkId);
+        int removedGameId = GetPlayerGameId(removedNetworkId);
 
         playerCount -= 1;
 
@@ -38,12 +38,7 @@ public struct PlayerIdDataArray : INetworkSerializable
         }
     }
 
-    public int GetPlayerGameId(ulong networkId)
-    {
-        return NetworkIdToGameId(networkId);
-    }
-
-    private int NetworkIdToGameId(ulong toConvertNetworkId)
+    public int GetPlayerGameId(ulong toConvertNetworkId)
     {
         Debug.Log("Attempting Conversion of clientNetworkId: " + toConvertNetworkId + ", playerCount = " + playerCount);
 
@@ -62,6 +57,11 @@ public struct PlayerIdDataArray : INetworkSerializable
         Debug.LogError("Cant Convert Id: " + toConvertNetworkId + ", networkIds are: + " + networkIds[0] + ", " + networkIds[1] + ", " + networkIds[2] + ", " + networkIds[3]);
 #endif
         return -1;
+    }
+
+    public ulong GetPlayerNetworkId(int toConvertGameId)
+    {
+        return networkIds[toConvertGameId];
     }
 
 

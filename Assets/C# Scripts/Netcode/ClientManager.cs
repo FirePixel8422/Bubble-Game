@@ -6,8 +6,10 @@ using UnityEngine;
 
 public class ClientManager : NetworkBehaviour
 {
-    private NetworkVariable<PlayerIdDataArray> _playerIdDataArray = new NetworkVariable<PlayerIdDataArray>(new PlayerIdDataArray(4));
-    public PlayerIdDataArray debug;
+    private static NetworkVariable<PlayerIdDataArray> _playerIdDataArray = new NetworkVariable<PlayerIdDataArray>(new PlayerIdDataArray(4));
+
+
+    public static ulong GetClientNetworkIdFromGameId(int gameId) => _playerIdDataArray.Value.GetPlayerNetworkId(gameId);
 
 
     [Tooltip("After NetworkManager.ClientDisconnected, before updating ClientManager gameId logic")]
@@ -19,6 +21,23 @@ public class ClientManager : NetworkBehaviour
 
     [Tooltip("Local Client gameId, the number equal to the playerCount when this client joined the lobby")]
     public static int LocalClientGameId { get; private set; }
+
+
+    [Tooltip("Local Client userName, value is set after PlayerDisplayManager's OnNetworkSpawn")]
+    public static string LocalUserName { get; private set; }
+
+
+    public static void SetLocalUserName(string newname)
+    {
+        LocalUserName = newname;
+    }
+
+
+
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public PlayerIdDataArray debug;
+#endif
 
 
 
@@ -72,8 +91,10 @@ public class ClientManager : NetworkBehaviour
     }
 
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     private void Update()
     {
         debug = _playerIdDataArray.Value;
     }
+#endif
 }

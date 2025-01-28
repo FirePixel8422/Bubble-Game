@@ -2,7 +2,9 @@ using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.Services.Authentication;
+using Unity.Services.Lobbies;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerDisplayManager : NetworkBehaviour
 {
@@ -13,14 +15,15 @@ public class PlayerDisplayManager : NetworkBehaviour
 
         _savedFixedPlayerNames = new FixedString32Bytes[4];
 
-        ClientManager.OnClientDisconnectedCallback += RemovePlayer_OnServer;
+        ClientManager.OnClientDisconnectedCallback += OnClientDisconnected;
     }
 
 
 
     [SerializeField] private TextMeshProUGUI[] playerNameField;
-    private FixedString32Bytes[] _savedFixedPlayerNames;
 
+
+    private FixedString32Bytes[] _savedFixedPlayerNames;
 
 
 
@@ -52,10 +55,19 @@ public class PlayerDisplayManager : NetworkBehaviour
         }
 #endif
 
+        ClientManager.SetLocalUserName(userName);
+
         AddPlayer_ServerRPC(new FixedString32Bytes(userName), NetworkManager.LocalClientId);
     }
 
-    private void RemovePlayer_OnServer(ulong clientNetworkId, int clientGameId, int playerCount)
+
+    public void KickPlayer(int gameId)
+    {
+        NetworkManager.DisconnectClient(ClientManager.GetClientNetworkIdFromGameId(gameId));
+    }
+
+
+    private void OnClientDisconnected(ulong clientNetworkId, int clientGameId, int playerCount)
     {
         print(clientGameId);
 
@@ -86,11 +98,24 @@ public class PlayerDisplayManager : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void SyncPlayerNames_ClientRPC(FixedString32Bytes[] fixedPlayerNames, int playerCount)
     {
+        string targetUserName;
+
         for (int i = 0; i < playerCount; i++)
         {
+            targetUserName = fixedPlayerNames[i].ToString();
+
+
             playerNameField[i].transform.parent.gameObject.SetActive(true);
 
-            playerNameField[i].text = fixedPlayerNames[i].ToString();
+
+            if (targetUserName == ClientManager.LocalUserName)
+            {
+                playerNameField[i].text = targetUserName + " (You)";
+            }
+            else
+            {
+                playerNameField[i].text = targetUserName;
+            }
         }
 
         for (int i = 3; i >= playerCount ; i--)
