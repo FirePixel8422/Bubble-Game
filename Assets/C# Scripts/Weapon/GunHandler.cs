@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class GunHandler : MonoBehaviour
+public class GunHandler : NetworkBehaviour
 {
     private Gun _g;
     private bool _hasShot;
@@ -12,6 +13,8 @@ public class GunHandler : MonoBehaviour
 
     private void Start()
     {
+        if (!IsOwner) return;
+
         StartCoroutine(ShootDelay());
         _g = GetComponent<Gun>();
     }
@@ -19,8 +22,8 @@ public class GunHandler : MonoBehaviour
 
     public void Shoot(InputAction.CallbackContext ctx)
     {
-        if (isBlocking) return;
-        if (!ctx.started) return;
+        if (isBlocking || !ctx.performed || !IsOwner) return;
+
         if (_g != null && !_hasShot)
         {
             _g.Shoot();
@@ -30,7 +33,7 @@ public class GunHandler : MonoBehaviour
 
     public void Reload(InputAction.CallbackContext ctx)
     {
-        if (!ctx.started) return;
+        if (!ctx.started || !IsOwner) return;
         if (_g != null)
         {
             _g.PrematureReload();

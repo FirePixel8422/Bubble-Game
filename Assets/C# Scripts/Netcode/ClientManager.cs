@@ -3,6 +3,7 @@ using System;
 using System.Text;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 
 
@@ -127,6 +128,9 @@ public class ClientManager : NetworkBehaviour
 
         //when kicked from the server, load this scene
         SceneManager.LoadScene("Setup Network");
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
 

@@ -8,19 +8,48 @@ public class Health : NetworkBehaviour, IHealable, IDamagable
 {
     [SerializeField] private NetworkVariable<int> health = new NetworkVariable<int>();
     [SerializeField] private int maxHealth;
-    public int killAmount;
+
+
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner) return;
+
+        health.OnValueChanged += (int prevHealth, int newHealth) =>
+        {
+            HUDUpdater.Instance.UpdateHealth(Math.Clamp(newHealth, 0, maxHealth));
+
+            if (newHealth <= 0)
+            {
+                PlayerSpawner.Instance.StartCoroutine(RespawnDelay());
+            }
+        };
+    }
+
+    private IEnumerator RespawnDelay()
+    {
+        yield return new WaitForSeconds(PlayerSpawner.Instance.respawnTime - 0.25f);
+
+        HUDUpdater.Instance.UpdateHealth(100);
+    }
+
+    private bool dead;
 
     public void OnDamaged(int damageTaken, GameObject owner)
     {
         health.Value -= damageTaken;
         if (health.Value <= 0)
         {
-            print("dead");
-            NetworkObject.Despawn(gameObject);
-            if (owner.TryGetComponent(out Health h))
+            if (dead == true)
             {
-                h.killAmount++;
+                return;
             }
+
+            dead = true;
+
+            PlayerSpawner.Instance.StartCoroutine(PlayerSpawner.Instance.KillClientOnServer(NetworkObject));
+
+            HUDUpdater.Instance.AddKill_ServerRPC(owner.GetComponent<NetworkObject>().OwnerClientId);
         }
     }
 
@@ -35,7 +64,6 @@ public class Health : NetworkBehaviour, IHealable, IDamagable
         {
             health.Value = maxHealth;
         }
-        print(overflow);
     }
     
 }

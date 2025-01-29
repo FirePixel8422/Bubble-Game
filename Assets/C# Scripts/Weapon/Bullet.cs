@@ -41,6 +41,9 @@ public class Bullet : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     private void SyncMovement_ClientRPC(Vector3 position, Quaternion rotation)
     {
+        //bullets get updated through server, updating these values on the server after sending them would flicker the bullet back and fourth.
+        if (IsServer) return;
+
         transform.position = position;
         transform.rotation = rotation;
     }

@@ -5,14 +5,25 @@ using UnityEngine;
 
 public class PlayerSpawner : NetworkBehaviour
 {
+    public static PlayerSpawner Instance { get; private set; }
+    private void Awake()
+    {
+        Instance = this;
+    }
+
+
+
+
     [SerializeField] private Transform[] spawnPoints;
     private float[] _spawnPointsCooldown;
 
     [SerializeField] private float spawnPointCooldown;
 
+    public float respawnTime;
+
     [SerializeField] private float playerHeight;
 
-    public NetworkObject playerPrefab;
+    public GameObject playerPrefab;
 
 
     public override void OnNetworkSpawn()
@@ -68,16 +79,16 @@ public class PlayerSpawner : NetworkBehaviour
 
         _spawnPointsCooldown[r] = spawnPointCooldown;
 
-        print(ownerClientId);
-
-        NetworkObject playerNetwork = NetworkManager.SpawnManager.InstantiateAndSpawn(playerPrefab, ownerClientId, true, false, false, spawnPoints[r].position, spawnPoints[r].rotation);
-       
-
+        NetworkObject playerNetwork = Instantiate(playerPrefab, spawnPoints[r].position, spawnPoints[r].rotation).GetComponent<NetworkObject>();
+        
         //keep feet on ground with ray
-        if (Physics.Raycast(transform.position + Vector3.up * 3, Vector3.down, out RaycastHit hit, 100))
+        if (Physics.Raycast(playerNetwork.transform.position + Vector3.up * 3, Vector3.down, out RaycastHit hit, 100))
         {
             playerNetwork.transform.position = new Vector3(spawnPoints[r].position.x, hit.point.y + playerHeight, spawnPoints[r].position.z);
         }
+
+        playerNetwork.SpawnWithOwnership(ownerClientId);
+
 
         SetupPlayer_ClientRPC(ownerClientId, playerNetwork.NetworkObjectId);
     }
@@ -86,24 +97,39 @@ public class PlayerSpawner : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     private void SetupPlayer_ClientRPC(ulong ownerClientId, ulong networkObjectId)
     {
-        NetworkObject playerNetwork = NetworkManager.SpawnManager.SpawnedObjects[networkObjectId];
-
-        //my player only
-        if (ownerClientId == NetworkManager.LocalClientId)
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject playerNetwork))
         {
-            Camera cam = playerNetwork.GetComponentInChildren<Camera>(true);
+            //on the local client, activate its local players component
+            if (ownerClientId == NetworkManager.LocalClientId)
+            {
+                playerNetwork.GetComponentInChildren<Camera>(true).enabled = true;
+                playerNetwork.GetComponentInChildren<AudioListener>().enabled = true;
+                playerNetwork.GetComponent<Rigidbody>().isKinematic = false;
 
-            cam.enabled = true;
+                Collider[] colliders = playerNetwork.GetComponents<Collider>();
+                foreach (Collider coll in colliders)
+                {
+                    if (coll.isTrigger) continue;
 
-            cam.GetComponent<AudioListener>().enabled = true;
+                    coll.enabled = true;
+                }
+            }
         }
         else
         {
-            //every other player
-            foreach (Collider coll in playerNetwork.GetComponentsInChildren<Collider>(true))
-            {
-                coll.enabled = false;
-            }
+            print("networkobject not found");
         }
+    }
+
+
+    public IEnumerator KillClientOnServer(NetworkObject playerNetwork)
+    {
+        ulong ownerOfKilledPlayer = playerNetwork.OwnerClientId;
+
+        playerNetwork.Despawn(true);
+
+        yield return new WaitForSeconds(respawnTime);
+
+        SpawnPlayer_ServerRPC(ownerOfKilledPlayer);
     }
 }
