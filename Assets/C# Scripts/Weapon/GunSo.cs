@@ -9,5 +9,5 @@ public class GunSo : ScriptableObject
     public int reloadTime;
     public int maxAmmo;
     public int speed;
-    public int fireRate;
+    public float fireRate;
 }

@@ -15,7 +15,7 @@ public class Gun : MonoBehaviour
     private int _reloadTime;
     private Task _currentTask;
     [SerializeField] private Animator animator;
-    [HideInInspector] public int fireRate;
+    [HideInInspector] public float fireRate;
 
     private void Start()
     {

@@ -50,7 +50,7 @@ public class GunHandler : MonoBehaviour
         while (true)
         {
             yield return new WaitUntil(() => _hasShot);
-            yield return new WaitForSeconds(Mathf.RoundToInt(_g.fireRate / 100));
+            yield return new WaitForSeconds(_g.fireRate);
             _hasShot = false;
         }
     }

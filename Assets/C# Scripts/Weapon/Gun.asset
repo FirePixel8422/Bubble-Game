@@ -16,4 +16,4 @@ MonoBehaviour:
   reloadTime: 1000
   maxAmmo: 20
   speed: 50
-  fireRate: 25
+  fireRate: 0.2
