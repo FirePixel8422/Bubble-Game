@@ -18,7 +18,23 @@ public class Movement : NetworkBehaviour
 
     private void Update()
     {
+        if (!IsOwner) return;
+
         transform.Translate(new Vector3(_input.x, 0, _input.y) * (speed * Time.deltaTime));
+
+        SyncPlayerTransform_ServerRPC(transform.position, transform.GetChild(0).rotation);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SyncPlayerTransform_ServerRPC(Vector3 pos, Quaternion rot)
+    {
+        SyncPlayerTransform_ClientRPC(pos, rot);
+    }
+
+    [ClientRpc(RequireOwnership = false)]
+    private void SyncPlayerTransform_ClientRPC(Vector3 pos, Quaternion rot)
+    {
+
     }
 
     public void OnMove(InputAction.CallbackContext ctx)

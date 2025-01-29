@@ -1,8 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections;
+
+
 public class Bullet : NetworkBehaviour
 {
     public GameObject owner { get; private set; }
@@ -15,13 +15,25 @@ public class Bullet : NetworkBehaviour
         _speed = speed;
     }
 
-    private void Start()
+    public override void OnNetworkSpawn()
     {
-        Destroy(gameObject, 10);
+        if (!IsServer) return;
+
+        StartCoroutine(Delay(10));
     }
+
+    private IEnumerator Delay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        NetworkObject.Despawn(true);
+    }
+
 
     private void Update()
     {
+        if (!IsServer) return;
+
         transform.Translate(Vector3.forward * (Time.deltaTime * _speed));
         SyncMovement_ClientRPC(transform.position, transform.rotation);
     }
@@ -35,11 +47,14 @@ public class Bullet : NetworkBehaviour
 
     public void OnTriggerEnter(Collider other)
     {
+        if (!IsServer) return;
+
         if (other.gameObject == owner || other.transform.root == owner.transform) return;
         if (other.TryGetComponent(out IDamagable damagable))
         {
             damagable.OnDamaged(damage, owner);
         }
-        Destroy(gameObject);
+
+        NetworkObject.Despawn(true);
     }
 }

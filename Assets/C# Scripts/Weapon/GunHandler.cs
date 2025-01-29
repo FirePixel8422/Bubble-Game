@@ -6,7 +6,6 @@ using UnityEngine.InputSystem;
 
 public class GunHandler : MonoBehaviour
 {
-    public GameObject gun;
     private Gun _g;
     private bool _hasShot;
     public bool isBlocking;
@@ -14,14 +13,9 @@ public class GunHandler : MonoBehaviour
     private void Start()
     {
         StartCoroutine(ShootDelay());
-        gun = GetComponentInChildren<Gun>().gameObject;
-        _g = gun.GetComponent<Gun>();
+        _g = GetComponent<Gun>();
     }
 
-    private void OnGunChanged()
-    {
-        _g = gun.GetComponent<Gun>();
-    }
 
     public void Shoot(InputAction.CallbackContext ctx)
     {

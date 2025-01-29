@@ -37,6 +37,8 @@ public class Gun : NetworkBehaviour
         InstantiateBullet_ServerRPC(NetworkManager.LocalClientId);
         remainingAmmo--;
     }
+
+
     [ServerRpc(RequireOwnership = false)]
     private void InstantiateBullet_ServerRPC(ulong clientId)
     {
