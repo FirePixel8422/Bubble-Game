@@ -146,8 +146,6 @@ public static class FileManager
             //write the data to the file
             await File.WriteAllTextAsync(path, outputData);
 
-            Debug.Log($"Game data saved to: {path}");
-
         }
         catch (Exception ex)
         {
@@ -184,8 +182,6 @@ public static class FileManager
                 }
 
                 T loadedData = JsonUtility.FromJson<T>(outputData);
-
-                Debug.Log($"Game data loaded from: {path}");
                 return (true, loadedData);
 
             }
@@ -218,8 +214,6 @@ public static class FileManager
             if (File.Exists(path))
             {
                 File.Delete(path); // Deletes the file
-
-                Debug.Log($"File deleted: {path}");
                 return true;
             }
             else

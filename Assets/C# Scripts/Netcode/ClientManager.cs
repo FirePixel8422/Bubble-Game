@@ -1,4 +1,6 @@
+using JetBrains.Annotations;
 using System;
+using System.Text;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,10 +8,26 @@ using UnityEngine;
 
 public class ClientManager : NetworkBehaviour
 {
-    private static NetworkVariable<PlayerIdDataArray> _playerIdDataArray = new NetworkVariable<PlayerIdDataArray>(new PlayerIdDataArray(4));
+    public static ClientManager Instance;
+
+    private static NetworkVariable<PlayerIdDataArray> _playerIdDataArray;
+
+    private void Awake()
+    {
+        Instance = this;
+
+        _playerIdDataArray = new NetworkVariable<PlayerIdDataArray>(new PlayerIdDataArray(4));
+    }
 
 
+
+
+    [Tooltip("Turn GameId into NetworkId")]
     public static ulong GetClientNetworkIdFromGameId(int gameId) => _playerIdDataArray.Value.GetPlayerNetworkId(gameId);
+
+    [Tooltip("Turn NetworkId into GameId")]
+    public static int GetClientGameIdFromNetworkId(ulong networkId) => _playerIdDataArray.Value.GetPlayerGameId(networkId);
+
 
 
     [Tooltip("After NetworkManager.ClientDisconnected, before updating ClientManager gameId logic")]
@@ -41,18 +59,15 @@ public class ClientManager : NetworkBehaviour
 
 
 
-    private void Awake()
-    {
-        DontDestroyOnLoad(gameObject);
-    }
-
     public override void OnNetworkSpawn()
     {
         if (IsServer)
         {
-            NetworkManager.OnClientConnectedCallback += OnClientConnected;
-            NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+            NetworkManager.OnClientConnectedCallback += OnClientConnected_OnServer;
+            NetworkManager.OnClientDisconnectCallback += OnClientDisconnected_OnServer;
         }
+
+        NetworkManager.OnClientDisconnectCallback += OnClientDisconnected_OnClient;
 
         _playerIdDataArray.OnValueChanged += (PlayerIdDataArray before, PlayerIdDataArray after) =>
         {
@@ -60,10 +75,9 @@ public class ClientManager : NetworkBehaviour
         };
     }
 
-    private void OnClientConnected(ulong clientId)
+    private void OnClientConnected_OnServer(ulong clientId)
     {
         OnClientConnectedCallback?.Invoke(clientId, _playerIdDataArray.Value.GetPlayerGameId(clientId), NetworkManager.ConnectedClientsIds.Count);
-
 
         PlayerIdDataArray updatedDataArray = _playerIdDataArray.Value;
 
@@ -72,7 +86,7 @@ public class ClientManager : NetworkBehaviour
         _playerIdDataArray.Value = updatedDataArray;
     }
 
-    private void OnClientDisconnected(ulong clientId)
+    private void OnClientDisconnected_OnServer(ulong clientId)
     {
         //if the diconnecting client is the server dont update data, the server is shut down anyways.
         if (clientId == 0)
@@ -89,6 +103,81 @@ public class ClientManager : NetworkBehaviour
 
         _playerIdDataArray.Value = updatedDataArray;
     }
+
+    private void OnClientDisconnected_OnClient(ulong clientId)
+    {
+        //call function only on client who disconnected
+        if (clientId != NetworkManager.LocalClientId)
+        {
+            return;
+        }
+
+
+        Destroy(gameObject);
+        Destroy(MatchMaker.Instance.gameObject);
+
+
+        if (IsServer)
+        {
+            NetworkManager.OnClientConnectedCallback -= OnClientConnected_OnServer;
+            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected_OnServer;
+        }
+
+        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected_OnClient;
+
+        //when kicked from the server, load this scene
+        SceneManager.LoadScene("Setup Network");
+    }
+
+
+
+
+    #region Kick Client and kill Server code
+
+    [ServerRpc(RequireOwnership = false)]
+    public void DisconnectClient_ServerRPC(ulong clientNetworkId)
+    {
+        GetKicked_ClientRPC(clientNetworkId);
+
+        NetworkManager.DisconnectClient(clientNetworkId);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void DisconnectClient_ServerRPC(int clientGameId)
+    {
+        ulong clientNetworkId = GetClientNetworkIdFromGameId(clientGameId);
+
+        GetKicked_ClientRPC(clientNetworkId);
+
+        NetworkManager.DisconnectClient(clientNetworkId);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void DisconnectAllClients_ServerRPC()
+    {
+        KickAllClients_ClientRPC();
+    }
+
+
+    [ClientRpc(RequireOwnership = false)]
+    private void GetKicked_ClientRPC(ulong clientNetworkId)
+    {
+        //destroy the rejoin reference on the kicked client
+        if (clientNetworkId == NetworkManager.LocalClientId)
+        {
+            FileManager.DeleteFile("RejoinData.json");
+        }
+    }
+
+    [ClientRpc(RequireOwnership = false)]
+    private void KickAllClients_ClientRPC()
+    {
+        //destroy the rejoin reference on the kicked client
+        FileManager.DeleteFile("RejoinData.json");
+    }
+
+    #endregion
+
 
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

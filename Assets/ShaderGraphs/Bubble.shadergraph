@@ -276,9 +276,9 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -378.39996337890627,
-            "y": -64.80001831054688,
-            "width": 130.4000701904297,
+            "x": -460.8000183105469,
+            "y": 199.99998474121095,
+            "width": 130.39999389648438,
             "height": 117.59999084472656
         }
     },
@@ -358,7 +358,7 @@
     "m_DefaultRefNameVersion": 1,
     "m_RefNameGeneratedByDisplayName": "Color",
     "m_DefaultReferenceName": "_Color",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_Main_Color",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,
     "m_CustomSlotLabel": "",
@@ -404,10 +404,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -927.199951171875,
-            "y": 123.20001220703125,
-            "width": 208.0,
-            "height": 325.5999450683594
+            "x": -701.6000366210938,
+            "y": 446.4000244140625,
+            "width": 207.99993896484376,
+            "height": 325.59991455078127
         }
     },
     "m_Slots": [
@@ -446,10 +446,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1114.4000244140625,
-            "y": 217.59999084472657,
+            "x": -906.4000854492188,
+            "y": 554.4000244140625,
             "width": 157.60003662109376,
-            "height": 33.59999084472656
+            "height": 33.5999755859375
         }
     },
     "m_Slots": [
@@ -1141,10 +1141,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -598.6451416015625,
-            "y": -64.38259887695313,
-            "width": 0.0,
-            "height": 0.0
+            "x": -598.400146484375,
+            "y": 240.0,
+            "width": 105.60012817382813,
+            "height": 33.600006103515628
         }
     },
     "m_Slots": [

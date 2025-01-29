@@ -836,7 +836,7 @@ GameObject:
   - component: {fileID: 573138711}
   - component: {fileID: 573138710}
   m_Layer: 5
-  m_Name: background (1)
+  m_Name: foreground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1268,7 +1268,7 @@ MonoBehaviour:
   passwordField: {fileID: 1482754957}
   errorTextField: {fileID: 1217195729}
   devAutoLogin: 1
-  autoLogOut: 0
+  autoLogOut: 1
   printLoginErrors: 1
 --- !u!4 &872731698
 Transform:
@@ -2143,7 +2143,7 @@ GameObject:
   - component: {fileID: 1424812457}
   - component: {fileID: 1424812456}
   m_Layer: 5
-  m_Name: background (1)
+  m_Name: foreground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

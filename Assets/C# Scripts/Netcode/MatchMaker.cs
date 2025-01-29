@@ -8,12 +8,14 @@ using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 
 public class MatchMaker : NetworkBehaviour
 {
-    public static MatchMaker Instance;
+    public static MatchMaker Instance { get; private set; }
+
     private void Awake()
     {
         Instance = this;
@@ -21,10 +23,25 @@ public class MatchMaker : NetworkBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public string _lobbyId;
+
 
     [SerializeField] private GameObject invisibleScreenCover;
+    //[SerializeField] private Button rejoinButton;
 
+
+    private async void Start()
+    {
+        (bool fileExists, ValueWrapper<string> lastJoinedLobbyId) = await FileManager.LoadInfo<ValueWrapper<string>>("RejoinData.json");
+
+        if (fileExists)
+        {
+            //turn button gameobject visible
+            //rejoinButton.gameObject.SetActive(true);
+
+            //setup button to call method
+            //rejoinButton.onClick.AddListener(() => RejoinLobbyAsync(lastJoinedLobbyId.value));
+        }
+    }
 
 
     public async void CreateLobbyAsync()
@@ -65,10 +82,7 @@ public class MatchMaker : NetworkBehaviour
 
             Lobby lobby = await Lobbies.Instance.CreateLobbyAsync("Unnamed Lobby", maxPlayers, options);
 
-
-            _lobbyId = lobby.Id;
-
-            StartCoroutine(HeartbeatLobbyCoroutine(lobby.Id, 15));
+            LobbyManager.SetLobbyData(lobby, true);
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(
                 _hostData.IPv4Address,
@@ -106,7 +120,11 @@ public class MatchMaker : NetworkBehaviour
                 return;
             }
 
-            string joinCode = lobbies[0].Data["joinCode"].Value;
+            //join oldest joinable lobby
+            Lobby lobby = lobbies[0];
+            LobbyManager.SetLobbyData(lobby, false);
+
+            string joinCode = lobby.Data["joinCode"].Value;
             JoinAllocation allocation = await Relay.Instance.JoinAllocationAsync(joinCode);
 
 
@@ -140,6 +158,19 @@ public class MatchMaker : NetworkBehaviour
     }
 
 
+    public async void RejoinLobbyAsync(string lobbyId)
+    {
+        try
+        {
+            Lobby lobby = await LobbyService.Instance.ReconnectToLobbyAsync(lobbyId);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError(e);
+        }
+    }
+
+
     public async Task<(bool, List<Lobby>)> FindLobbiesAsync()
     {
         try
@@ -152,12 +183,19 @@ public class MatchMaker : NetworkBehaviour
                     new QueryFilter(
                         field: QueryFilter.FieldOptions.AvailableSlots,
                         op: QueryFilter.OpOptions.GT,
-                        value: "-1")
+                        value: "-1"),
+
+                    // Only show non locked lobbies (lobbies that are not yet in a started match)
+                     new QueryFilter(
+                         field: QueryFilter.FieldOptions.IsLocked,
+                         op: QueryFilter.OpOptions.EQ,
+                         value: "false"),
                 },
+
                 Order = new List<QueryOrder>
                 {
-                    // Show the newest lobbies first
-                    new QueryOrder(false, QueryOrder.FieldOptions.Created),
+                    // Show the oldest lobbies first
+                    new QueryOrder(true, QueryOrder.FieldOptions.Created),
                 }
             };
 
@@ -179,8 +217,6 @@ public class MatchMaker : NetworkBehaviour
         try
         {
             Lobby lobby = await Lobbies.Instance.JoinLobbyByIdAsync(lobbyId);
-
-            //localPlayerId = lobby.Players[^1].Id;
 
             string joinCode = lobby.Data["joinCode"].Value;
             JoinAllocation allocation = await Relay.Instance.JoinAllocationAsync(joinCode);
@@ -210,18 +246,6 @@ public class MatchMaker : NetworkBehaviour
         {
             print(e);
             throw;
-        }
-    }
-
-
-
-    private IEnumerator HeartbeatLobbyCoroutine(string lobbyId, float waitTimeSeconds)
-    {
-        var delay = new WaitForSecondsRealtime(waitTimeSeconds);
-        while (true)
-        {
-            Lobbies.Instance.SendHeartbeatPingAsync(lobbyId);
-            yield return delay;
         }
     }
 }

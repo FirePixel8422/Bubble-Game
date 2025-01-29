@@ -64,11 +64,11 @@ public class LoginHandler : MonoBehaviour
 
         await UnityServices.InitializeAsync();
 
-        TryAutoLoginWithSessionToken();
+        TryAutoLoginWithSessionTokenAsync();
     }
 
 
-    private async void TryAutoLoginWithSessionToken()
+    private async void TryAutoLoginWithSessionTokenAsync()
     {
         blackScreenCover.SetActive(true);
 

@@ -40,14 +40,10 @@ public struct PlayerIdDataArray : INetworkSerializable
 
     public int GetPlayerGameId(ulong toConvertNetworkId)
     {
-        Debug.Log("Attempting Conversion of clientNetworkId: " + toConvertNetworkId + ", playerCount = " + playerCount);
-
         for (int i = 0; i < playerCount; i++)
         {
             if (networkIds[i] == toConvertNetworkId)
             {
-                Debug.Log("clientNetworkId: " + toConvertNetworkId + " converted to gameId: " + i);
-
                 return i;
             }
         }

@@ -33,9 +33,9 @@ public static class SceneManager
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public static SceneEventProgressStatus LoadSceneOnNetwork_ServerRPC(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
+    public static void LoadSceneOnNetwork_ServerRPC(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
     {
-        return NetworkManager.Singleton.SceneManager.LoadScene(sceneName, mode);
+        NetworkManager.Singleton.SceneManager.LoadScene(sceneName, mode);
     }
 
     public static SceneEventProgressStatus LoadSceneOnNetwork(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
