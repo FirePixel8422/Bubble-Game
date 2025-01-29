@@ -9,7 +9,7 @@ public class WaterZone : MonoBehaviour
     {
         if (other.gameObject.TryGetComponent(out Health h))
         {
-            h.TakeDamage(1000);
+            h.OnDamaged(1000, null);
         }
     }
 }

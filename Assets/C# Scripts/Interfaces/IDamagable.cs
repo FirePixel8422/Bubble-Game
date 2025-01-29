@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IDamagable 
 {
-    public void OnDamaged(int damageTaken);
+    public void OnDamaged(int damageTaken, GameObject owner);
 }

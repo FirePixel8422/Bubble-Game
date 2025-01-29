@@ -2,10 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Gun : MonoBehaviour
+public class Gun : NetworkBehaviour
 {
     [SerializeField] protected GameObject bubble;
     [SerializeField] private GunSo so;
@@ -33,9 +34,15 @@ public class Gun : MonoBehaviour
             Reload(_reloadTime);
             return;
         }
-        GameObject b = Instantiate(bubble, shootPos.position, shootPos.rotation);
-        b.GetComponent<Bullet>().SetVariables(transform.root.gameObject, so.damage, so.speed);
+        InstantiateBullet_ServerRPC(NetworkManager.LocalClientId);
         remainingAmmo--;
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void InstantiateBullet_ServerRPC(ulong clientId)
+    {
+        NetworkObject b = Instantiate(bubble, shootPos.position, shootPos.rotation).GetComponent<NetworkObject>();
+        b.GetComponent<Bullet>().SetVariables(transform.root.gameObject, so.damage, so.speed);
+        b.SpawnWithOwnership(clientId);
     }
 
     public void PrematureReload()

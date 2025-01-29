@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private int health;
-
+    
 
     public void TakeDamage(int damage)
     {

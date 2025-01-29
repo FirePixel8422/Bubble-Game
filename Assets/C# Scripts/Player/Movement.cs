@@ -1,8 +1,9 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
-public class Movement : MonoBehaviour
+public class Movement : NetworkBehaviour
 {
     [SerializeField] private float speed;
     [SerializeField] private float jump;
@@ -22,11 +23,13 @@ public class Movement : MonoBehaviour
 
     public void OnMove(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         _input = ctx.ReadValue<Vector2>();
     }
 
     public void OnJump(InputAction.CallbackContext ctx)
     {
+        if (!IsOwner) return;
         if (_grounded)
         {
             //print("Jumped");
@@ -38,6 +41,7 @@ public class Movement : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (!IsOwner) return;
         _grounded = true;
         // if (collision.collider.CompareTag("Ground"))
         // {

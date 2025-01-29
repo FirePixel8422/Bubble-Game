@@ -4,18 +4,23 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Health : MonoBehaviour, IHealable, IDamagable
+public class Health : NetworkBehaviour, IHealable, IDamagable
 {
     [SerializeField] private NetworkVariable<int> health = new NetworkVariable<int>();
     [SerializeField] private int maxHealth;
+    public int killAmount;
 
-    public void OnDamaged(int damageTaken)
+    public void OnDamaged(int damageTaken, GameObject owner)
     {
         health.Value -= damageTaken;
         if (health.Value <= 0)
         {
             print("dead");
-            Destroy(gameObject);
+            NetworkObject.Despawn(gameObject);
+            if (owner.TryGetComponent(out Health h))
+            {
+                h.killAmount++;
+            }
         }
     }
 
