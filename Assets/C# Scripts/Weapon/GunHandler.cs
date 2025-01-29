@@ -26,7 +26,6 @@ public class GunHandler : MonoBehaviour
     public void Shoot(InputAction.CallbackContext ctx)
     {
         if (isBlocking) return;
-        print("shot");
         if (!ctx.started) return;
         if (_g != null && !_hasShot)
         {
@@ -37,7 +36,6 @@ public class GunHandler : MonoBehaviour
 
     public void Reload(InputAction.CallbackContext ctx)
     {
-        print("reload");
         if (!ctx.started) return;
         if (_g != null)
         {

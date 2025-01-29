@@ -28,9 +28,9 @@ public class Bullet : MonoBehaviour
     public void OnTriggerEnter(Collider other)
     {
         if (other.gameObject == owner || other.transform.root == owner.transform) return;
-        if (other.TryGetComponent(out Health h))
+        if (other.TryGetComponent(out IDamagable damagable))
         {
-            h.TakeDamage(damage);
+            damagable.OnDamaged(damage);
         }
         Destroy(gameObject);
     }

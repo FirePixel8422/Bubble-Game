@@ -27,7 +27,6 @@ public class Gun : MonoBehaviour
 
     public virtual void Shoot()
     {
-        print("shooting");
         if (_currentTask != null) return;
         if (remainingAmmo <= 0)
         {

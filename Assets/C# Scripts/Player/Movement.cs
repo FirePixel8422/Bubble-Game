@@ -29,7 +29,7 @@ public class Movement : MonoBehaviour
     {
         if (_grounded)
         {
-            print("Jumped");
+            //print("Jumped");
             _rb.AddForce(0, jump * speed, 0);
             _grounded = false;
         }
