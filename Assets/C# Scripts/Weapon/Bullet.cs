@@ -55,6 +55,9 @@ public class Bullet : NetworkBehaviour
             damagable.OnDamaged(damage, owner);
         }
 
-        NetworkObject.Despawn(true);
+        if (NetworkObject.IsSpawned)
+        {
+            NetworkObject.Despawn(true);
+        }
     }
 }

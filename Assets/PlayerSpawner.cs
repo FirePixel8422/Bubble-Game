@@ -68,6 +68,7 @@ public class PlayerSpawner : NetworkBehaviour
 
         _spawnPointsCooldown[r] = spawnPointCooldown;
 
+        print(ownerClientId);
 
         NetworkObject playerNetwork = NetworkManager.SpawnManager.InstantiateAndSpawn(playerPrefab, ownerClientId, true, false, false, spawnPoints[r].position, spawnPoints[r].rotation);
        
