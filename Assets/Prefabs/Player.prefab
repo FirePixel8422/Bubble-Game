@@ -606,12 +606,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8ef34db2b8ceb446ad26e279ad18964, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 6.5
+  speed: 5
   rotTransform: {fileID: 7674187535698085889}
   jumping: 0
   hasExtraJump: 1
-  fallVel: 8
-  jumpStrength: 12
+  fallVel: 5
+  jumpStrength: 6
   groundCheckTransform: {fileID: 1836294052725307377}
   groundLayers:
     serializedVersion: 2
@@ -674,7 +674,6 @@ MonoBehaviour:
   health:
     m_InternalValue: 100
   maxHealth: 100
-  killAmount: 0
 --- !u!114 &5144460058434187957
 MonoBehaviour:
   m_ObjectHideFlags: 0

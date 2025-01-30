@@ -1,9 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Gun : NetworkBehaviour
@@ -24,6 +20,8 @@ public class Gun : NetworkBehaviour
         _reloadTime = so.reloadTime;
         remainingAmmo = maxAmmo;
         fireRate = so.fireRate;
+
+        HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
     }
 
     public virtual void Shoot()
@@ -36,14 +34,16 @@ public class Gun : NetworkBehaviour
         }
         InstantiateBullet_ServerRPC(NetworkManager.LocalClientId);
         remainingAmmo--;
+
+        HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
     }
 
 
     [ServerRpc(RequireOwnership = false)]
     private void InstantiateBullet_ServerRPC(ulong clientId)
     {
-        NetworkObject b = Instantiate(bubble, shootPos.position, shootPos.rotation).GetComponent<NetworkObject>();
-        b.GetComponent<Bullet>().SetVariables(transform.root.gameObject, so.damage, so.speed);
+        NetworkObject b = Instantiate(bubble, shootPos.position, shootPos.rotation * Quaternion.Euler(Random.Range(-so.spread.x, so.spread.x), Random.Range(-so.spread.y, so.spread.y), Random.Range(-so.spread.z, so.spread.z))).GetComponent<NetworkObject>();
+        b.GetComponent<Bullet>().SetVariables(transform.root.gameObject, so.damage, Random.Range(so.minSpeed, so.maxSpeed));
         b.SpawnWithOwnership(clientId);
     }
 
@@ -58,7 +58,9 @@ public class Gun : NetworkBehaviour
         _currentTask = Task.Delay(_reloadTime);
         await _currentTask;
         remainingAmmo = maxAmmo;
+
+        HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
+
         _currentTask = null;
-        
     }
 }

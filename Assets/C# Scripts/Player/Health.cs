@@ -21,16 +21,9 @@ public class Health : NetworkBehaviour, IHealable, IDamagable
 
             if (newHealth <= 0)
             {
-                PlayerSpawner.Instance.StartCoroutine(RespawnDelay());
+                PlayerSpawner.Instance.StartCoroutine(PlayerSpawner.Instance.RespawnDelay());
             }
         };
-    }
-
-    private IEnumerator RespawnDelay()
-    {
-        yield return new WaitForSeconds(PlayerSpawner.Instance.respawnTime - 0.25f);
-
-        HUDUpdater.Instance.UpdateHealth(100);
     }
 
     private bool dead;
@@ -49,7 +42,11 @@ public class Health : NetworkBehaviour, IHealable, IDamagable
 
             PlayerSpawner.Instance.StartCoroutine(PlayerSpawner.Instance.KillClientOnServer(NetworkObject));
 
-            HUDUpdater.Instance.AddKill_ServerRPC(owner.GetComponent<NetworkObject>().OwnerClientId);
+
+            if (owner.TryGetComponent(out NetworkObject networkObject))
+            {
+                HUDUpdater.Instance.AddKill_ServerRPC(networkObject.OwnerClientId);
+            }
         }
     }
 

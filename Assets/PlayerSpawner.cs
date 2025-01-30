@@ -132,4 +132,11 @@ public class PlayerSpawner : NetworkBehaviour
 
         SpawnPlayer_ServerRPC(ownerOfKilledPlayer);
     }
+
+    public IEnumerator RespawnDelay()
+    {
+        yield return new WaitForSeconds(PlayerSpawner.Instance.respawnTime - 0.25f);
+
+        HUDUpdater.Instance.UpdateHealth(100);
+    }
 }

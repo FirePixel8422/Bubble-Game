@@ -19,10 +19,25 @@ public class GunHandler : NetworkBehaviour
         _g = GetComponent<Gun>();
     }
 
+    private bool held;
+
+
+
+    private void Update()
+    {
+        if (held && _g != null && !_hasShot)
+        {
+            _g.Shoot();
+            _hasShot = true;
+        }
+    }
+
 
     public void Shoot(InputAction.CallbackContext ctx)
     {
-        if (isBlocking || !ctx.performed || !IsOwner) return;
+        if (isBlocking || !IsOwner) return;
+
+        held = ctx.performed;
 
         if (_g != null && !_hasShot)
         {
