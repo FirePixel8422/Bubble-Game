@@ -22,7 +22,6 @@ public class Gun : NetworkBehaviour
         _reloadTime = so.reloadTime;
         remainingAmmo = maxAmmo;
         fireRate = so.fireRate;
-        shotgunFireRate = so.shotgunFireRate;
         HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
     }
 
