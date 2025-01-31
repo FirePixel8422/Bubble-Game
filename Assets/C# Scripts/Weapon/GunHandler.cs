@@ -47,18 +47,6 @@ public class GunHandler : NetworkBehaviour
         }
     }
 
-    public void Shotgun(InputAction.CallbackContext ctx)
-    {
-        if (isBlocking || !IsOwner) return;
-
-        if (_g != null && !_hasShot)
-        {
-            _g.ShotgunShoot();
-            _shotgun = true;
-            _hasShot = true;
-        }
-    }
-
     public void Reload(InputAction.CallbackContext ctx)
     {
         if (!ctx.started || !IsOwner) return;
@@ -73,14 +61,7 @@ public class GunHandler : NetworkBehaviour
         while (true)
         {
             yield return new WaitUntil(() => _hasShot);
-            if (_shotgun)
-            {
-                yield return new WaitForSeconds(_g.shotgunFireRate);
-            }
-            else
-            {
-                yield return new WaitForSeconds(_g.fireRate);
-            }
+            yield return new WaitForSeconds(_g.fireRate);
             _hasShot = false;
         }
     }

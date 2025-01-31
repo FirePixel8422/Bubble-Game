@@ -39,24 +39,7 @@ public class Gun : NetworkBehaviour
 
         HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
     }
-
-    public virtual void ShotgunShoot()
-    {
-        if (_currentTask != null) return;
-        if (remainingAmmo <= 0)
-        {
-            Reload(_reloadTime);
-            return;
-        }
-
-        for (int i = 0; i < 2; i++)
-        {
-            InstantiateBullet_ServerRPC(NetworkManager.LocalClientId);
-            remainingAmmo -= 3;
-        }
-        
-        HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
-    }
+    
 
 
     [ServerRpc(RequireOwnership = false)]

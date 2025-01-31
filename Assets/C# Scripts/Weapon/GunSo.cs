@@ -8,7 +8,6 @@ public class GunSo : ScriptableObject
     public int damage;
     public int reloadTime;
     public int maxAmmo;
-    public float shotgunFireRate;
     public Vector3 spread;
 
     public int minSpeed, maxSpeed;

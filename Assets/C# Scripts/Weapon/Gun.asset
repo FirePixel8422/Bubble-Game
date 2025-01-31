@@ -17,6 +17,6 @@ MonoBehaviour:
   maxAmmo: 65
   shotgunFireRate: 0.5
   spread: {x: 2, y: 2, z: 2}
-  minSpeed: 12
-  maxSpeed: 16
-  fireRate: 0.075
+  minSpeed: 16
+  maxSpeed: 20
+  fireRate: 0.2

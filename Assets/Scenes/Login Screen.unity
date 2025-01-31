@@ -1267,7 +1267,7 @@ MonoBehaviour:
   usernameField: {fileID: 854856186}
   passwordField: {fileID: 1482754957}
   errorTextField: {fileID: 1217195729}
-  devAutoLogin: 1
+  devAutoLogin: 0
   autoLogOut: 1
   printLoginErrors: 1
 --- !u!4 &872731698
