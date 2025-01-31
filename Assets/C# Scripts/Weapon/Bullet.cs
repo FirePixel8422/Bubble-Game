@@ -51,8 +51,12 @@ public class Bullet : NetworkBehaviour
     public void OnTriggerEnter(Collider other)
     {
         if (!IsServer) return;
-
+        
         if (other.gameObject == owner || other.transform.root == owner.transform) return;
+        if (other.TryGetComponent(out Bullet bullet))
+        {
+            if (bullet.owner == owner) return;
+        }
         if (other.TryGetComponent(out IDamagable damagable))
         {
             damagable.OnDamaged(damage, owner);

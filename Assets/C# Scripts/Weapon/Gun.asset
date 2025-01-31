@@ -15,6 +15,7 @@ MonoBehaviour:
   damage: 5
   reloadTime: 1000
   maxAmmo: 65
+  shotgunFireRate: 0.5
   spread: {x: 2, y: 2, z: 2}
   minSpeed: 12
   maxSpeed: 16

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -13,6 +14,7 @@ public class Gun : NetworkBehaviour
     private Task _currentTask;
     [SerializeField] private Animator animator;
     [HideInInspector] public float fireRate;
+    public float shotgunFireRate;
 
     private void Start()
     {
@@ -20,7 +22,7 @@ public class Gun : NetworkBehaviour
         _reloadTime = so.reloadTime;
         remainingAmmo = maxAmmo;
         fireRate = so.fireRate;
-
+        shotgunFireRate = so.shotgunFireRate;
         HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
     }
 
@@ -35,6 +37,24 @@ public class Gun : NetworkBehaviour
         InstantiateBullet_ServerRPC(NetworkManager.LocalClientId);
         remainingAmmo--;
 
+        HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
+    }
+
+    public virtual void ShotgunShoot()
+    {
+        if (_currentTask != null) return;
+        if (remainingAmmo <= 0)
+        {
+            Reload(_reloadTime);
+            return;
+        }
+
+        for (int i = 0; i < 2; i++)
+        {
+            InstantiateBullet_ServerRPC(NetworkManager.LocalClientId);
+            remainingAmmo -= 3;
+        }
+        
         HUDUpdater.Instance.UpdateAmmo(remainingAmmo);
     }
 

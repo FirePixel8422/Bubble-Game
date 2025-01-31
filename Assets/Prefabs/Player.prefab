@@ -568,6 +568,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: f6b58831-1e21-48e6-b923-e9e4bc4a627b
     m_ActionName: Player/Shield[/Keyboard/z,/XInputControllerWindows/buttonEast]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5144460058434187957}
+        m_TargetAssemblyTypeName: Gun, Assembly-CSharp
+        m_MethodName: ShotgunShoot
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 88c88812-c662-4969-a6fe-7ff5d7147589
+    m_ActionName: Player/Shotgun[/Mouse/rightButton]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -585,7 +601,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3965966233
+  GlobalObjectIdHash: 3057741085
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
