@@ -65,7 +65,7 @@ public class Movement : NetworkBehaviour
         }
 
 
-        SyncPlayerTransform_ServerRPC(transform.position, rotTransform.rotation);
+        SyncPlayerTransform_ServerRPC(transform.position, transform.rotation);
     }
 
 
@@ -110,6 +110,6 @@ public class Movement : NetworkBehaviour
         if (NetworkManager.LocalClientId == OwnerClientId) return;
 
         transform.position = pos;
-        rotTransform.rotation = rot;
+        transform.rotation = rot;
     }
 }

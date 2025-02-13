@@ -1,7 +1,8 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
-public class HealingPad : MonoBehaviour
+public class HealingPad : NetworkBehaviour
 {
     [SerializeField] private GameObject bubbleGO, crossGO;
 
@@ -18,19 +19,12 @@ public class HealingPad : MonoBehaviour
     [SerializeField] float healCooldownTime;
     private void Awake()
     {
+        if (!IsServer) return;
+
         _originalY = bubbleGO.transform.position.y;
         StartCoroutine(BobObject(bubbleGO, _bobSpeed, _bobStepHeight));
     }
 
-    private void FixedUpdate()
-    {
-        RotateObjectAlongAxis(crossGO, crossRotDir);
-    }
-
-    private void RotateObjectAlongAxis(GameObject objectToRotate, Vector3 rotDir)
-    {
-        objectToRotate.transform.Rotate(rotDir * Time.deltaTime * 50f); 
-    }
 
     private IEnumerator BobObject(GameObject objectToBob, float bobSpeed, float bobStepHeight)
     {
@@ -40,27 +34,77 @@ public class HealingPad : MonoBehaviour
         {
             timePassed += Time.deltaTime * bobSpeed;
             float newY = _originalY + Mathf.Sin(timePassed) * bobStepHeight;
+
             objectToBob.transform.position = new Vector3(objectToBob.transform.position.x, newY, objectToBob.transform.position.z);
+            objectToBob.transform.Rotate(crossRotDir * Time.deltaTime * 50f);
+
+            SyncTransform_ClientRPC(objectToBob.transform.position, objectToBob.transform.rotation);
+
             yield return null;
         }
     }
 
+    [ClientRpc(RequireOwnership = false)]
+    private void SyncTransform_ClientRPC(Vector3 pos, Quaternion rot)
+    {
+        bubbleGO.transform.position = pos;
+        bubbleGO.transform.rotation = rot;
+    }
+
+
     public void OnTriggerEnter(Collider other)
     {
-        print(other.name);
-        if (onCooldown) { return; }
+        if (!IsOwner || onCooldown) return;
+
         if (other.gameObject.TryGetComponent(out IHealable healable))
         {
-            healable.OnHeal(healingFactor);
-            StartCoroutine(HealCooldown());
+            TryPickupHealthBubble_ServerRpc(other.transform.GetComponent<NetworkObject>().NetworkObjectId, NetworkManager.LocalClientId);
         }
     }
     public IEnumerator HealCooldown()
     {
-        bubbleGO.SetActive(false);
-        onCooldown = true;
         yield return new WaitForSeconds(healCooldownTime);
+
+        onCooldown = true;
+
+        EnableBubble_ClientRPC();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void TryPickupHealthBubble_ServerRpc(ulong networkObjectId, ulong clientId)
+    {
+        if (onCooldown)
+        {
+            return;
+        }
+
+        onCooldown = true;
+        StartCoroutine(HealCooldown());
+
+        PickupHealthBubble_ClientRpc(networkObjectId, clientId);
+    }
+
+
+    [ClientRpc(RequireOwnership = false)]
+    private void PickupHealthBubble_ClientRpc(ulong networkObjectId, ulong clientId)
+    {
+        if (NetworkManager.LocalClientId == clientId)
+        {
+            NetworkObject playerNetwork = NetworkManager.SpawnManager.SpawnedObjects[networkObjectId];
+
+            if (playerNetwork.TryGetComponent(out IHealable healable))
+            {
+                healable.OnHeal(healingFactor);
+            }
+        }
+
+        bubbleGO.SetActive(false);
+    }
+
+
+    [ClientRpc(RequireOwnership = false)]
+    private void EnableBubble_ClientRPC()
+    {
         bubbleGO.SetActive(true);
-        onCooldown = false;
     }
 }

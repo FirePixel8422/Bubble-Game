@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: HealingGreen
+  m_Name: HealingGreen 1
   m_Shader: {fileID: -6465566751694194690, guid: 30f8a2f548581c64b9801af9900a716b,
     type: 3}
   m_Parent: {fileID: 0}
@@ -86,7 +86,7 @@ Material:
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
-    - _BubbleStrength: 0.5
+    - _BubbleStrength: 0.2
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
@@ -118,7 +118,7 @@ Material:
     - _BaseColor: {r: 0.33903664, g: 0.9811321, b: 0, a: 1}
     - _Color: {r: 0.3390366, g: 0.9811321, b: 0, a: 1}
     - _EmissionColor: {r: 1.2382766, g: 3.962264, b: 0.20558919, a: 1}
-    - _Main_Color: {r: 0.4275711, g: 1.2167859, b: 0.4204601, a: 0}
+    - _Main_Color: {r: 2.0049338, g: 5.7056603, b: 1.9715896, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &7066842519834574347

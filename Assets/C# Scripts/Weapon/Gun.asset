@@ -12,11 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b57e56e2d7b85844bed73f1fac524e1, type: 3}
   m_Name: Gun
   m_EditorClassIdentifier: 
-  damage: 5
+  damage: 10
   reloadTime: 1000
-  maxAmmo: 65
-  shotgunFireRate: 0.5
+  maxAmmo: 30
   spread: {x: 2, y: 2, z: 2}
-  minSpeed: 16
-  maxSpeed: 20
-  fireRate: 0.2
+  minSpeed: 30
+  maxSpeed: 30
+  fireRate: 0.25
